@@ -320,14 +320,13 @@ export default async function HomePage() {
     const Posts = await fetchPosts(10);
     const posts = Posts.map(mapWpPost);
 
-    const rawExclusivePosts = await fetchPostsByCategory("exclusive", 7);
-    const exclusivePosts = [
-        ...(exclusive && exclusive.length > 0 ? exclusive.map(mapWpPost) : []),
-        ...(rawExclusivePosts && rawExclusivePosts.length > 0 ? rawExclusivePosts.map(mapWpPost) : []),
-    ]
-        .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
-        .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-        .slice(0, 1);
+  const rawExclusivePosts = await fetchPostsByCategory("exclusive", 6);
+  const exclusivePosts =
+    rawExclusivePosts && rawExclusivePosts.length > 0
+      ? rawExclusivePosts.map(mapWpPost)
+      : exclusive && exclusive.length > 0
+        ? exclusive.map(mapWpPost)
+        : [];
 
     // Top Stories (isFeatured / मुख्य समाचार) — shown after exclusive, before breaking
     const rawTopStoriesPosts = await fetchPostsByCategory("featured-news", 7);
@@ -1165,57 +1164,114 @@ export default async function HomePage() {
         <section className="w-full">
           <div className="w-full max-w-[1920px] mx-auto px-mobile-safe">
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8 md:gap-10">
-              {/* LEFT: Legal Section (6 posts) */}
-              <div className="flex flex-col">
-                <div className="flex items-center justify-between mb-6 border-b-2 border-gray-200 pb-3">
-                  <h2 className="text-2xl md:text-3xl font-bold text-nepal-black font-nepali-serif">
-                    कानून{" "}
-                    <span className="text-gray-500 font-poppins text-lg font-normal">
-                      / Legal
-                    </span>
-                  </h2>
-                  <Link
-                    href="/legal"
-                    className="text-xs font-bold text-nepal-red uppercase tracking-wider hover:underline"
-                  >
-                    थप हेर्नुहोस् →
-                  </Link>
-                </div>
+              {/* LEFT: Legal and Exclusive Sections */}
+              <div className="flex flex-col gap-10">
+                {/* Exclusive / विशेष Section */}
+                {exclusivePosts.length > 0 && (
+                  <div className="flex flex-col">
+                    <div className="flex items-center justify-between mb-6 border-b-2 border-nepal-orange pb-3">
+                      <h2 className="text-2xl md:text-3xl font-bold text-nepal-black font-nepali-serif">
+                        विशेष{" "}
+                        <span className="text-gray-500 font-poppins text-lg font-normal">
+                          / Exclusive
+                        </span>
+                      </h2>
+                      <Link
+                        href="/exclusive"
+                        className="text-xs font-bold text-nepal-red uppercase tracking-wider hover:underline"
+                      >
+                        थप हेर्नुहोस् →
+                      </Link>
+                    </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                                    {legalPosts.map((post) => {
-                                        const contentImages = extractImagesFromContent(
-                                            post.content,
-                                        );
-                                        const featuredImageUrl = post.featuredImage;
-                                        const thumbnailImage =
-                                            featuredImageUrl ?? contentImages[0] ?? undefined;
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {exclusivePosts.slice(0, 6).map((post) => {
+                        const contentImages = extractImagesFromContent(
+                          post.content,
+                        );
+                        const featuredImageUrl = post.featuredImage;
+                        const thumbnailImage =
+                          featuredImageUrl ?? contentImages[0] ?? undefined;
 
-                                        return (
-                                            <Link
-                                                key={post.id}
-                                                href={getPostUrl(post)}
-                                                className="group flex flex-col cursor-pointer bg-white border border-gray-200 p-4 transition-all duration-200 hover:shadow-md"
-                                            >
-                                                <div className="w-full h-40 bg-gray-100 overflow-hidden mb-3">
-                                                    <NewsImage
-                                                        post={post}
-                                                        images={thumbnailImage ? [thumbnailImage] : []}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                        fallbackGradient="bg-gradient-to-br from-gray-200 to-gray-300"
-                                                    />
-                                                </div>
-                                                <h3 className="font-nepali-serif font-bold text-base md:text-lg text-gray-900 leading-snug group-hover:text-nepal-red transition-colors line-clamp-2 mb-2">
-                                                    {getCleanTitle(post.title)}
-                                                </h3>
-                                                <p className="text-sm text-gray-600 font-poppins line-clamp-2">
-                                                    {getCleanContent(post.content, 90)}
-                                                </p>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
+                        return (
+                          <Link
+                            key={post.id}
+                            href={getPostUrl(post)}
+                            className="group flex flex-col cursor-pointer bg-white border border-gray-200 p-4 transition-all duration-200 hover:shadow-md"
+                          >
+                            <div className="w-full h-40 bg-gray-100 overflow-hidden mb-3">
+                              <NewsImage
+                                post={post}
+                                images={thumbnailImage ? [thumbnailImage] : []}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                fallbackGradient="bg-gradient-to-br from-gray-200 to-gray-300"
+                              />
                             </div>
+                            <h3 className="font-nepali-serif font-bold text-base md:text-lg text-gray-900 leading-snug group-hover:text-nepal-red transition-colors line-clamp-2 mb-2">
+                              {getCleanTitle(post.title)}
+                            </h3>
+                            <p className="text-sm text-gray-600 font-poppins line-clamp-2">
+                              {getCleanContent(post.content, 90)}
+                            </p>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Legal Section */}
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between mb-6 border-b-2 border-gray-200 pb-3">
+                    <h2 className="text-2xl md:text-3xl font-bold text-nepal-black font-nepali-serif">
+                      कानून{" "}
+                      <span className="text-gray-500 font-poppins text-lg font-normal">
+                        / Legal
+                      </span>
+                    </h2>
+                    <Link
+                      href="/legal"
+                      className="text-xs font-bold text-nepal-red uppercase tracking-wider hover:underline"
+                    >
+                      थप हेर्नुहोस् →
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {legalPosts.map((post) => {
+                      const contentImages = extractImagesFromContent(
+                        post.content,
+                      );
+                      const featuredImageUrl = post.featuredImage;
+                      const thumbnailImage =
+                        featuredImageUrl ?? contentImages[0] ?? undefined;
+
+                      return (
+                        <Link
+                          key={post.id}
+                          href={getPostUrl(post)}
+                          className="group flex flex-col cursor-pointer bg-white border border-gray-200 p-4 transition-all duration-200 hover:shadow-md"
+                        >
+                          <div className="w-full h-40 bg-gray-100 overflow-hidden mb-3">
+                            <NewsImage
+                              post={post}
+                              images={thumbnailImage ? [thumbnailImage] : []}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              fallbackGradient="bg-gradient-to-br from-gray-200 to-gray-300"
+                            />
+                          </div>
+                          <h3 className="font-nepali-serif font-bold text-base md:text-lg text-gray-900 leading-snug group-hover:text-nepal-red transition-colors line-clamp-2 mb-2">
+                            {getCleanTitle(post.title)}
+                          </h3>
+                          <p className="text-sm text-gray-600 font-poppins line-clamp-2">
+                            {getCleanContent(post.content, 90)}
+                          </p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
               {/* RIGHT: Nepal at a Glance / Forex Rates */}
               <div className="flex flex-col">
