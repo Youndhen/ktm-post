@@ -32,10 +32,26 @@ export default async function BannerAdSlot({
 
   if (!imageUrl) return null;
 
+  const isVideo =
+    imageUrl.endsWith(".mp4") ||
+    imageUrl.endsWith(".webm") ||
+    imageUrl.includes("mp4");
+
   return (
     <div className="w-full flex justify-center py-4 md:py-6">
-      <div className="block" title={title}>
-        <img src={imageUrl} alt={title} className={className} loading="lazy" />
+      <div className="block w-full max-w-5xl px-mobile-safe" title={title}>
+        {isVideo ? (
+          <video
+            src={imageUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto rounded-xs object-cover border border-gray-200 shadow-xs"
+          />
+        ) : (
+          <img src={imageUrl} alt={title} className={className} loading="lazy" />
+        )}
       </div>
     </div>
   );

@@ -453,6 +453,14 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ── BANNER / VIDEO AD (Below Exclusive News / Above Top Stories) ── */}
+      <Suspense fallback={null}>
+        <BannerAdSlot
+          index={0}
+          fallbackImage="/banner/Aston Video_MT_1100x120.mp4"
+        />
+      </Suspense>
+
             {/* ── TOP STORIES / मुख्य समाचार ── */}
             {topStoriesPosts.length > 0 && (
                 <div className="pt-2 md:pt-4 w-full max-w-[1920px] mx-auto px-mobile-safe space-y-4">
