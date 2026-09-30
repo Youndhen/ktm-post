@@ -14,7 +14,7 @@ export default async function AdminPagesListPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="admin-page-header mb-0">
-          <h1>Static Pages (स्थिर पृष्ठहरू)</h1>
+          <h1>Footer Pages (फुटर पृष्ठहरू)</h1>
           <p>
             Create and manage static pages like About Us, Privacy Policy, Terms of Service, Contact, etc.
           </p>
@@ -34,7 +34,7 @@ export default async function AdminPagesListPage() {
             <FileText className="w-6 h-6" />
           </div>
           <h3 className="text-base font-semibold text-gray-900 mb-1">
-            No Static Pages Found
+            No Footer Pages Found
           </h3>
           <p className="text-sm text-gray-500 mb-5 max-w-sm mx-auto">
             You haven't created any custom static pages yet. Create your first page to show in the footer or menu.
@@ -70,7 +70,7 @@ export default async function AdminPagesListPage() {
                       <div className="flex items-center gap-1.5 text-xs text-gray-400 font-mono mt-0.5">
                         <span>/{page.slug}</span>
                         <Link
-                          href={`/${page.slug}`}
+                          href={`/page/${page.slug}`}
                           target="_blank"
                           className="hover:text-nepal-red inline-flex items-center"
                           title="Open page in new tab"

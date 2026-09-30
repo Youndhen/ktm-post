@@ -87,7 +87,7 @@ export default function FooterClient({ footerPages, settings = {} }: FooterClien
             {linksToRender.map((link) => (
               <li key={link.slug}>
                 <Link
-                  href={`/${link.slug}`}
+                  href={`/page/${link.slug}`}
                   className="hover:text-nepal-red transition-colors duration-200"
                 >
                   {link.title}
