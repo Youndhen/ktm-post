@@ -1,6 +1,13 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+import path from "node:path";
+
+const nextConfig: NextConfig = {
   output: "standalone",
+  // Pin the tracing root to this project. Without it Next walks up the
+  // filesystem looking for a lockfile, finds the stray one in the home
+  // directory, and nests .next/standalone under Desktop/ktmposts/ktm-post/
+  // so that server.js is not where the Docker CMD expects it.
+  outputFileTracingRoot: path.join(process.cwd()),
   staticPageGenerationTimeout: 120,
   images: {
     remotePatterns: [
@@ -33,4 +40,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
