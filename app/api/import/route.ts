@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/get-session";
+import { isStaff } from "@/lib/staff";
 import { prisma } from "@/lib/prisma";
 import { fetchPosts } from "@/lib/wordpress";
 import { transliterateSlug } from "@/lib/transliterate";
@@ -8,6 +9,9 @@ export async function POST(req: Request) {
   const session = await getServerSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isStaff(session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {

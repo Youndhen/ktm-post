@@ -2,24 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffSession } from "@/lib/get-session";
 
 export type SponsorActionState = {
   error?: string | null;
   success?: boolean;
 } | null;
 
-async function requireAdmin() {
-  const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
-  return session;
-}
-
 export async function createSponsor(
   _prevState: SponsorActionState,
   formData: FormData
 ): Promise<SponsorActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
   const bannerImageId = (formData.get("bannerImageId") as string)?.trim();
@@ -57,7 +51,7 @@ export async function updateSponsor(
   _prevState: SponsorActionState,
   formData: FormData
 ): Promise<SponsorActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
   const bannerImageId = (formData.get("bannerImageId") as string)?.trim();
@@ -95,7 +89,7 @@ export async function toggleSponsorActive(
   id: string,
   currentStatus: boolean
 ): Promise<SponsorActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   try {
     await prisma.sponsor.update({
@@ -113,7 +107,7 @@ export async function toggleSponsorActive(
 }
 
 export async function deleteSponsor(id: string): Promise<SponsorActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   try {
     await prisma.sponsor.delete({ where: { id } });

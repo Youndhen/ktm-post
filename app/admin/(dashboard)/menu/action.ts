@@ -2,24 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffSession } from "@/lib/get-session";
 
 export type MenuActionState = {
   error?: string | null;
   success?: boolean;
 } | null;
 
-async function requireAdmin() {
-  const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
-  return session;
-}
-
 export async function createMenuItem(
   _prevState: MenuActionState,
   formData: FormData
 ): Promise<MenuActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   const label = (formData.get("label") as string)?.trim();
   const nepaliLabel = (formData.get("nepaliLabel") as string)?.trim() || null;
@@ -63,7 +57,7 @@ export async function updateMenuItem(
   _prevState: MenuActionState,
   formData: FormData
 ): Promise<MenuActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   const label = (formData.get("label") as string)?.trim();
   const nepaliLabel = (formData.get("nepaliLabel") as string)?.trim() || null;
@@ -103,7 +97,7 @@ export async function updateMenuItem(
 }
 
 export async function deleteMenuItem(id: string): Promise<MenuActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   try {
     await prisma.menuItem.delete({ where: { id } });

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffSession } from "@/lib/get-session";
 import { redirect } from "next/navigation";
 import { transliterateSlug } from "@/lib/transliterate";
 
@@ -17,17 +17,11 @@ function revalidateStaticPage(slug: string) {
   revalidatePath(`/page/${slug}`);
 }
 
-async function requireSession() {
-  const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
-  return session;
-}
-
 export async function createStaticPage(
   _prevState: PageActionState,
   formData: FormData
 ): Promise<PageActionState> {
-  await requireSession();
+  await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim() || "";
@@ -71,7 +65,7 @@ export async function updateStaticPage(
   _prevState: PageActionState,
   formData: FormData
 ): Promise<PageActionState> {
-  await requireSession();
+  await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim() || "";
@@ -118,7 +112,7 @@ export async function updateStaticPage(
 }
 
 export async function deleteStaticPage(pageId: string): Promise<PageActionState> {
-  await requireSession();
+  await requireStaffSession();
 
   const page = await prisma.staticPage.findUnique({ where: { id: pageId } });
   if (!page) return { error: "Page not found" };

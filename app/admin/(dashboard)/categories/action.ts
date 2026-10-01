@@ -2,18 +2,12 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffSession } from "@/lib/get-session";
 
 export type CategoryActionState = {
   error?: string | null;
   success?: boolean;
 } | null;
-
-async function requireAdmin() {
-  const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
-  return session;
-}
 
 function slugify(text: string) {
   return text
@@ -27,7 +21,7 @@ export async function createCategory(
   _prevState: CategoryActionState,
   formData: FormData
 ): Promise<CategoryActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   const name = (formData.get("name") as string)?.trim();
   const nepaliName = (formData.get("nepaliName") as string)?.trim() || null;
@@ -67,7 +61,7 @@ export async function updateCategory(
   _prevState: CategoryActionState,
   formData: FormData
 ): Promise<CategoryActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   const name = (formData.get("name") as string)?.trim();
   const nepaliName = (formData.get("nepaliName") as string)?.trim() || null;
@@ -102,7 +96,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string): Promise<CategoryActionState> {
-  await requireAdmin();
+  await requireStaffSession();
 
   try {
     await prisma.category.delete({ where: { id } });

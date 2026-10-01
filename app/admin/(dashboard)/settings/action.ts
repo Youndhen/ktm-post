@@ -2,24 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffSession } from "@/lib/get-session";
 
 export type SettingsActionState = {
   error?: string | null;
   success?: boolean;
 } | null;
 
-async function requireSession() {
-  const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
-  return session;
-}
-
 export async function saveSiteSettings(
   _prevState: SettingsActionState,
   formData: FormData
 ): Promise<SettingsActionState> {
-  await requireSession();
+  await requireStaffSession();
 
   try {
     const entries: Record<string, string> = {

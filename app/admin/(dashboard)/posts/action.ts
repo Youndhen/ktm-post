@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffSession } from "@/lib/get-session";
 import { redirect } from "next/navigation";
 
 import { transliterateSlug } from "@/lib/transliterate";
@@ -11,12 +11,6 @@ export type ActionState = {
   error?: string | null;
   success?: boolean;
 } | null;
-
-async function requireSession() {
-  const session = await getServerSession();
-  if (!session) throw new Error("Unauthorized");
-  return session;
-}
 
 function parsePublishDate(input: string | null): Date | null {
   if (!input) return null;
@@ -34,7 +28,7 @@ export async function createPost(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await requireSession();
+  const session = await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim();
@@ -136,7 +130,7 @@ export async function updatePost(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireSession();
+  await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim();
@@ -267,7 +261,7 @@ export async function updatePost(
 }
 
 export async function deletePost(postId: string): Promise<ActionState> {
-  const session = await requireSession();
+  const session = await requireStaffSession();
 
   const post = await prisma.post.findUnique({ where: { id: postId } });
   if (!post) return { error: "Post not found" };

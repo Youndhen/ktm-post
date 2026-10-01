@@ -1,4 +1,5 @@
 import { getServerSession } from "@/lib/get-session";
+import { isStaff } from "@/lib/staff";
 import { redirect } from "next/navigation";
 import AdminSidebar from "../AdminSidebar";
 import "../admin.css";
@@ -12,6 +13,9 @@ export default async function AdminPortalLayout({
 
   if (!session) {
     redirect("/admin/login");
+  }
+  if (!isStaff(session.user.role)) {
+    redirect("/");
   }
 
   return (
