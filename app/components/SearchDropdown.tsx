@@ -14,7 +14,7 @@ interface SearchResult {
 }
 
 interface SearchDropdownProps {
-  variant?: "user" | "search" | "inline";
+  variant?: "search" | "inline";
 }
 
 export default function SearchDropdown({ variant = "search" }: SearchDropdownProps) {
@@ -145,42 +145,15 @@ export default function SearchDropdown({ variant = "search" }: SearchDropdownPro
   return (
     <div ref={containerRef} className="relative flex justify-end w-full max-w-[240px] sm:max-w-xs md:max-w-sm">
       {!isOpen ? (
-        variant === "user" ? (
-          <Link
-            href="/login"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-blue-600/70 hover:border-blue-600 flex items-center justify-center text-blue-600 hover:bg-blue-50/50 transition-all shadow-sm shrink-0"
-            title="Sign In / Admin Login"
-            aria-label="Sign In"
-          >
-            <svg
-              className="w-5 h-5 sm:w-6 sm:h-6 stroke-current stroke-[1.5]"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M20 21C20 17.134 16.4183 14 12 14C7.58172 14 4 17.134 4 21"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-        ) : (
-          <button
-            onClick={() => setIsOpen(true)}
-            className="p-2 sm:px-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 sm:gap-2 text-gray-700 text-xs sm:text-sm font-medium border border-gray-200 bg-white shrink-0 shadow-sm"
-            title="Search"
-            aria-label="Search"
-          >
-            <Search className="w-4 h-4 text-nepal-red shrink-0" />
-            <span className="hidden sm:inline text-gray-600 font-poppins text-xs font-semibold">खोज्नुहोस्</span>
-          </button>
-        )
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 sm:px-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 sm:gap-2 text-gray-700 text-xs sm:text-sm font-medium border border-gray-200 bg-white shrink-0 shadow-sm"
+          title="Search"
+          aria-label="Search"
+        >
+          <Search className="w-4 h-4 text-nepal-red shrink-0" />
+          <span className="hidden sm:inline text-gray-600 font-poppins text-xs font-semibold">खोज्नुहोस्</span>
+        </button>
       ) : (
         <form onSubmit={handleSubmit} className="relative flex items-center w-full min-w-[200px] sm:min-w-[260px]">
           <input

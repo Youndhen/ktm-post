@@ -61,10 +61,8 @@ export default function HeaderClient({ categories }: HeaderClientProps) {
 
         {/* Logo Masthead */}
         <div className={`flex items-center justify-between w-full px-4 sm:px-6 ${scrolled ? "py-1.5" : "py-3"} relative`}>
-          {/* Left: User / Sign In Icon */}
-          <div className="flex items-center justify-start w-12 sm:min-w-[140px]">
-            <SearchDropdown variant="user" />
-          </div>
+          {/* Left: spacer that keeps the logo centred */}
+          <div className="w-12 sm:min-w-[140px]" aria-hidden="true" />
 
           {/* Center: Brand Logo + Nepali Date */}
           <div className="flex flex-col items-center justify-center text-center">
