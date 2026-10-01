@@ -158,12 +158,27 @@ origin is addressed by its `*.elb.amazonaws.com` name.
 
    It creates two cache policies and the distribution, prints the
    distribution domain and a generated `X-Origin-Verify` value.
-3. Lock the ALB to CloudFront. On the HTTPS listener, change the default
-   action to a fixed 403 response and add a rule: if HTTP header
+3. Wait until the distribution status is `Deployed` (10-15 minutes), then
+   test it **before** touching DNS. The distribution's own
+   `dxxxx.cloudfront.net` name cannot be used for this (the ALB certificate
+   does not cover it), so pin the real hostname to an edge address:
+
+   ```bash
+   EDGE_IP=$(dig +short dxxxx.cloudfront.net | head -1)
+   curl -sI --resolve www.ktmpost.com:443:$EDGE_IP https://www.ktmpost.com/ | grep -iE "^(HTTP|x-cache|cache-control)"
+   curl -sI --resolve www.ktmpost.com:443:$EDGE_IP -H 'RSC: 1' https://www.ktmpost.com/ | grep -iE "^(HTTP|x-cache|content-type)"
+   ```
+
+   Expect `200` both times, `x-cache: Hit from cloudfront` on a repeat, and
+   `text/x-component` only for the `RSC: 1` request.
+4. Change the `www.ktmpost.com` DNS record to the distribution domain and
+   wait out the old record's TTL, so no visitor is still resolving the ALB.
+5. Only then lock the ALB to CloudFront. On the HTTPS listener, change the
+   default action to a fixed 403 response and add a rule: if HTTP header
    `X-Origin-Verify` equals the printed value, forward to the target group.
    Requests that bypass CloudFront then get 403. The target group health
-   check goes straight to the task and is not affected.
-4. Change the `www.ktmpost.com` DNS record to the distribution domain.
+   check goes straight to the task and is not affected. Doing this before
+   step 4 has taken effect returns 403 to every visitor still on the ALB.
 
 `SITE_URL`/`NEXT_PUBLIC_SITE_URL` stay `https://www.ktmpost.com`.
 
@@ -191,6 +206,16 @@ and keep the pooled connection string. This is the single biggest latency
 improvement available and needs no code change.
 
 ## Deploying
+
+Before the first deploy of this version:
+
+- Add the `ADMIN_SETUP_TOKEN` key to the existing secret (an empty string is
+  fine). The task definition now references it, and the task will not start
+  without it.
+- Review the accounts. Public sign-up used to be open and gave every new
+  account the `editor` role, so anyone who registered that way is still
+  staff. In `/admin/users` (or the `user` table) delete accounts you do not
+  recognise; deleting a user also removes their sessions.
 
 After the one-time setup, every deploy is:
 

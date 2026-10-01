@@ -71,11 +71,15 @@ aws cloudfront create-distribution --distribution-config "file://${RENDERED}" \
 
 cat <<EOF
 
-Next steps (see DEPLOY.md, "CloudFront"):
-  1. Add an ALB listener rule that returns 403 unless the request carries
-       X-Origin-Verify: ${ORIGIN_VERIFY}
-     Keep this value somewhere safe; it is not stored anywhere else.
+Next steps, in this order (see DEPLOY.md, "CloudFront"):
+  1. Wait for the distribution status to become Deployed (10-15 minutes) and
+     test it with curl --resolve as DEPLOY.md shows.
   2. Point the ${SITE_DOMAIN} DNS record (CNAME or alias) at the distribution
-     domain printed above instead of the ALB.
-  3. Wait for the distribution status to become Deployed (10-15 minutes).
+     domain printed above instead of the ALB, and wait out the old TTL.
+  3. Only then add an ALB listener rule that returns 403 unless the request
+     carries
+       X-Origin-Verify: ${ORIGIN_VERIFY}
+     Locking the ALB before DNS has moved returns 403 to every visitor.
+     Note this value now; it can also be read back from the distribution's
+     origin settings.
 EOF
