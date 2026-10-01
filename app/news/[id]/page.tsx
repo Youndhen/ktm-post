@@ -15,6 +15,7 @@ import SidebarAds from "@/app/components/SidebarAds";
 import { Suspense } from "react";
 
 import { Inter } from "next/font/google";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCleanContent, getPostUrl } from "@/lib/post-format";
 import ImageSlider from "@/app/components/ImageSlider";
@@ -335,32 +336,9 @@ export default async function NewsSlugPage({
 
   const post = await fetchPostFromDB(id, category);
 
-  if (!post) {
-    return (
-      <div
-        className={`${inter.className} min-h-screen text-nepal-black w-full gradient-white-to-orange margin-auto `}
-      >
-        <div className="pt-32 md:pt-48 lg:pt-64"></div>
-        <div className="flex items-center justify-center min-h-[60vh] w-full px-mobile-safe">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="text-nepal-black">Post Not Found</span>
-            </h1>
-            <p className="text-gray-600 mb-6">
-              The article you&apos;re looking for doesn&apos;t exist.
-            </p>
-            <a
-              href="/"
-              className=" mt-10 inline-block bg-nepal-orange text-white px-6 py-3 rounded-lg hover:bg-[#d32a2a] transition-all font-bold"
-            >
-              Go Back Home
-            </a>
-          </div>
-        </div>
-        <div className="h-24 bg-transparent"></div>
-      </div>
-    );
-  }
+  // A real 404 (app/not-found.tsx), so missing articles are not served and
+  // cached as if they were pages.
+  if (!post) notFound();
 
   // Get category slugs for related posts
   const categorySlugs = post.categories.map((pc) => pc.category.slug);
