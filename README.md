@@ -16,6 +16,8 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+Run the unit tests for the pure helpers in `lib/` with `npm test`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 ## Running with Docker
@@ -56,6 +58,12 @@ another host port:
 ```bash
 APP_PORT=3001 docker compose up -d
 ```
+
+The container runs with `NODE_ENV=production`, where the admin sign-in only
+accepts requests from `BETTER_AUTH_URL`, `NEXT_PUBLIC_SITE_URL` and
+ktmpost.com. If you change the port, set `BETTER_AUTH_URL` to the address
+you open in the browser (for example `http://localhost:3001`), or signing in
+at `/admin/login` fails with "Invalid origin".
 
 Deploying to AWS ECS Fargate is documented in [DEPLOY.md](DEPLOY.md).
 
