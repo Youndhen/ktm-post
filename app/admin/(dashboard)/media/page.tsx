@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import MediaLibrary from "./MediaLibrary";
+import { requireStaffPage } from "@/lib/get-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminMediaPage() {
+  await requireStaffPage();
+
   const mediaItems = await prisma.media.findMany({
     orderBy: { createdAt: "desc" },
     include: {

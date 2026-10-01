@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { requireStaffPage } from "@/lib/get-session";
 import {
   FileText,
   CheckCircle,
@@ -9,6 +10,8 @@ import {
 } from "lucide-react";
 
 export default async function AdminDashboard() {
+  await requireStaffPage();
+
   const [totalPosts, publishedPosts, draftPosts, recentPosts] =
     await Promise.all([
       prisma.post.count(),

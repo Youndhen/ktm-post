@@ -1,13 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "@/lib/get-session";
-import { notFound, redirect } from "next/navigation";
+import { requireStaffPage } from "@/lib/get-session";
 import UserManager from "./UserManager";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
-  const session = await getServerSession();
-  if (!session) redirect("/admin/login");
+  const session = await requireStaffPage();
 
   if (session.user.role !== "admin") {
     return (

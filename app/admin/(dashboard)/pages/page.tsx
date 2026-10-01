@@ -2,10 +2,13 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Plus, Edit2, FileText, Globe, ExternalLink } from "lucide-react";
 import DeletePageButton from "./DeletePageButton";
+import { requireStaffPage } from "@/lib/get-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPagesListPage() {
+  await requireStaffPage();
+
   const pages = await prisma.staticPage.findMany({
     orderBy: [{ menuOrder: "asc" }, { createdAt: "desc" }],
   });

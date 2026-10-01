@@ -2,8 +2,11 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import PostsTable from "./PostsTable";
+import { requireStaffPage } from "@/lib/get-session";
 
 export default async function AdminPostsPage() {
+  await requireStaffPage();
+
   let posts: any[] = [];
   try {
     posts = await prisma.post.findMany({

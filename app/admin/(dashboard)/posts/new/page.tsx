@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffPage } from "@/lib/get-session";
 import { PostForm } from "../PostForm";
 
 export default async function NewPostPage() {
-  const [categories, users, session] = await Promise.all([
+  const session = await requireStaffPage();
+  const [categories, users] = await Promise.all([
     prisma.category.findMany({
       orderBy: { menuOrder: "asc" },
     }),
@@ -11,7 +12,6 @@ export default async function NewPostPage() {
       select: { id: true, name: true, email: true },
       orderBy: { name: "asc" },
     }),
-    getServerSession(),
   ]);
 
   return (
@@ -23,7 +23,7 @@ export default async function NewPostPage() {
       <PostForm
         categories={categories}
         users={users}
-        currentUserId={session?.user?.id}
+        currentUserId={session.user.id}
       />
     </>
   );

@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import MenuManager from "./MenuManager";
+import { requireStaffPage } from "@/lib/get-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminMenuPage() {
+  await requireStaffPage();
+
   const [menuItems, categories] = await Promise.all([
     prisma.menuItem.findMany({
       orderBy: { order: "asc" },

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { PageForm } from "../PageForm";
+import { requireStaffPage } from "@/lib/get-session";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,8 @@ export default async function EditStaticPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireStaffPage();
+
   const { id } = await params;
   const page = await prisma.staticPage.findUnique({
     where: { id },

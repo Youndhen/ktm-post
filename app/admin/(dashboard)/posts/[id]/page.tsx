@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { getServerSession } from "@/lib/get-session";
+import { requireStaffPage } from "@/lib/get-session";
 import { PostForm } from "../PostForm";
 
 export default async function EditPostPage({
@@ -8,9 +8,10 @@ export default async function EditPostPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await requireStaffPage();
   const { id } = await params;
 
-  const [post, categories, users, session] = await Promise.all([
+  const [post, categories, users] = await Promise.all([
     prisma.post.findUnique({
       where: { id },
       include: {
@@ -24,7 +25,6 @@ export default async function EditPostPage({
       select: { id: true, name: true, email: true },
       orderBy: { name: "asc" },
     }),
-    getServerSession(),
   ]);
 
   if (!post) {
@@ -60,7 +60,7 @@ export default async function EditPostPage({
         }}
         categories={categories}
         users={users}
-        currentUserId={session?.user?.id}
+        currentUserId={session.user.id}
       />
     </>
   );

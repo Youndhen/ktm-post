@@ -1,6 +1,9 @@
 import { PageForm } from "../PageForm";
+import { requireStaffPage } from "@/lib/get-session";
 
-export default function NewStaticPage() {
+export default async function NewStaticPage() {
+  await requireStaffPage();
+
   return (
     <div className="space-y-6">
       <div className="admin-page-header">

@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import SponsorManager from "./SponsorManager";
+import { requireStaffPage } from "@/lib/get-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSponsorsPage() {
+  await requireStaffPage();
+
   const [sponsors, categories] = await Promise.all([
     prisma.sponsor.findMany({
       orderBy: [{ priority: "desc" }, { createdAt: "desc" }],

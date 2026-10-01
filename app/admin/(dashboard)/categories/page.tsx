@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import CategoryManager from "./CategoryManager";
+import { requireStaffPage } from "@/lib/get-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
+  await requireStaffPage();
+
   const categories = await prisma.category.findMany({
     orderBy: { menuOrder: "asc" },
     include: {
