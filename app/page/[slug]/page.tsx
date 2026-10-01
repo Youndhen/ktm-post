@@ -3,7 +3,13 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+// No paths are prerendered at build. Without this export a dynamic segment is
+// rendered on every request and "revalidate" is ignored (no-store).
+export async function generateStaticParams() {
+  return [];
+}
 
 export default async function StaticPageView({
   params,

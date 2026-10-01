@@ -1,6 +1,12 @@
 export const runtime = "nodejs";
 export const revalidate = 60;
 
+// No paths are prerendered at build. Without this export a dynamic segment is
+// rendered on every request and "revalidate" is ignored (no-store).
+export async function generateStaticParams() {
+  return [];
+}
+
 import { fetchPostsByCategory, fetchWPCategories } from "@/lib/wordpress";
 import { transliterateSlug } from "@/lib/transliterate";
 import { extractImagesFromContent, getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "@/lib/post-format";

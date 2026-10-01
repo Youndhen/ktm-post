@@ -11,6 +11,12 @@ export type PageActionState = {
   success?: boolean;
 } | null;
 
+// Static pages are served at both /<slug> and /page/<slug>.
+function revalidateStaticPage(slug: string) {
+  revalidatePath(`/${slug}`);
+  revalidatePath(`/page/${slug}`);
+}
+
 async function requireSession() {
   const session = await getServerSession();
   if (!session) throw new Error("Unauthorized");
@@ -55,7 +61,8 @@ export async function createStaticPage(
   }
 
   revalidatePath("/admin/pages");
-  revalidatePath("/");
+  revalidateStaticPage(slug);
+  revalidatePath("/", "layout");
   redirect("/admin/pages");
 }
 
@@ -104,9 +111,9 @@ export async function updateStaticPage(
   }
 
   revalidatePath("/admin/pages");
-  revalidatePath(`/${current.slug}`);
-  if (slug !== current.slug) revalidatePath(`/${slug}`);
-  revalidatePath("/");
+  revalidateStaticPage(current.slug);
+  if (slug !== current.slug) revalidateStaticPage(slug);
+  revalidatePath("/", "layout");
   redirect("/admin/pages");
 }
 
@@ -124,7 +131,7 @@ export async function deleteStaticPage(pageId: string): Promise<PageActionState>
   }
 
   revalidatePath("/admin/pages");
-  revalidatePath(`/${page.slug}`);
-  revalidatePath("/");
+  revalidateStaticPage(page.slug);
+  revalidatePath("/", "layout");
   return { success: true };
 }

@@ -52,7 +52,9 @@ export async function saveSiteSettings(
       });
     }
 
-    revalidatePath("/");
+    // The footer on every page renders site settings.
+    revalidatePath("/", "layout");
+    revalidatePath("/contact");
     revalidatePath("/admin/settings");
     return { success: true };
   } catch (err: any) {

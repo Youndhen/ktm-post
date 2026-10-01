@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft, Mail, Phone, MapPin, Building2, Globe } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function ContactPage() {
   const [page, settingsRecords] = await Promise.all([
