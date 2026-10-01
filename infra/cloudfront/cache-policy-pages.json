@@ -1,0 +1,28 @@
+{
+  "CachePolicyConfig": {
+    "Name": "ktm-post-pages",
+    "Comment": "Obey origin Cache-Control. ISR pages send s-maxage, dynamic pages send no-store.",
+    "MinTTL": 0,
+    "DefaultTTL": 0,
+    "MaxTTL": 31536000,
+    "ParametersInCacheKeyAndForwardedToOrigin": {
+      "EnableAcceptEncodingGzip": true,
+      "EnableAcceptEncodingBrotli": true,
+      "HeadersConfig": {
+        "HeaderBehavior": "whitelist",
+        "Headers": {
+          "Quantity": 5,
+          "Items": [
+            "RSC",
+            "Next-Router-Prefetch",
+            "Next-Router-State-Tree",
+            "Next-Router-Segment-Prefetch",
+            "Next-Url"
+          ]
+        }
+      },
+      "CookiesConfig": { "CookieBehavior": "none" },
+      "QueryStringsConfig": { "QueryStringBehavior": "all" }
+    }
+  }
+}

@@ -17,7 +17,10 @@ saves money is:
 - **Origin (one Fargate task):** cache misses, ISR regeneration, the admin
   dashboard, auth, and API routes.
 
-Public pages are already ISR (`revalidate = 60`). The task is to put a CDN
+Public pages declare `revalidate = 60`, but the dynamic-segment routes
+(`/[category]`, `/[category]/[id]`, `/news/[id]`) need an empty
+`generateStaticParams` before Next 16 treats them as ISR; without it they
+answer `no-store`. The task is to put a CDN
 in front, stop serving rarely-changing pages dynamically, and close the
 security holes.
 
@@ -47,10 +50,15 @@ Cache behaviours, most specific first:
 
 | Path | Cache policy | Origin request policy |
 |---|---|---|
-| `/_next/static/*` | managed CachingOptimized | none |
-| `/_next/image*` | custom: key = query string, min 60s, default 1 day, max 1 year | none |
-| `/admin/*`, `/api/*` | managed CachingDisabled | managed AllViewer |
-| `/*` default | custom: min 0, default 0, max 1 year, key = all query strings + headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`, `Next-Url`, `Accept`; no cookies | managed AllViewer |
+| `/_next/static/*` | managed CachingOptimized | managed AllViewer |
+| `/_next/image*` | custom: key = query string + header `Accept`, min 60s, default 1 day, max 1 year | managed AllViewer |
+| `/admin`, `/admin/*`, `/api/*` | managed CachingDisabled | managed AllViewer |
+| `/*` default | custom: min 0, default 0, max 1 year, key = all query strings + headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`, `Next-Router-Segment-Prefetch`, `Next-Url`; no cookies | managed AllViewer |
+
+AllViewer is attached to every behaviour, including the static ones, because
+it is what forwards the viewer `Host` header: CloudFront validates the ALB's
+certificate against the forwarded `Host`, and without it against the
+`*.elb.amazonaws.com` origin name, which the certificate does not cover.
 
 With min TTL 0 the default behaviour obeys the origin. Next sends
 `s-maxage=60, stale-while-revalidate` for ISR pages and `no-store` for
@@ -83,8 +91,9 @@ Change from `force-dynamic` to `revalidate = 3600`:
 `app/about-us`, `app/accessibility`, `app/advertise`, `app/privacy-policy`,
 `app/terms-of-service`, `app/contact`, `app/page/[slug]`.
 
-`app/page/[slug]` has no `generateStaticParams`, so it becomes on-demand
-ISR: first hit renders, later hits are cached for an hour.
+`app/page/[slug]` gets a `generateStaticParams` that returns an empty list,
+which makes it on-demand ISR: first hit renders, later hits are cached for
+an hour.
 
 Invalidation so edits show up immediately:
 - `pages/action.ts` create/update/delete: also `revalidatePath("/" + slug)`

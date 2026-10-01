@@ -116,6 +116,80 @@ to reach Neon and Cloudinary.
 
 Finally point the `www.ktmpost.com` DNS record at the ALB.
 
+## CloudFront (do this once the ALB works)
+
+Without a CDN every JS chunk, font, image and cached page is served by the
+Fargate task through the ALB, and Nepali readers connect to Mumbai for all
+of it. CloudFront caches:
+
+- `/_next/static/*`  for a year (hashed filenames, managed CachingOptimized)
+- `/_next/image*`    for a day, keyed on the query string and `Accept`
+- everything else    exactly as long as the origin says: ISR pages send
+                     `s-maxage=60` (home, news, category and article pages)
+                     or `s-maxage=3600` (footer pages); dynamic pages send
+                     `no-store` and are never cached
+- `/admin`, `/admin/*`, `/api/*`  never cached
+
+The default behaviour keys on the Next.js `RSC`, `Next-Router-Prefetch`,
+`Next-Router-State-Tree`, `Next-Router-Segment-Prefetch` and `Next-Url`
+headers so client-side navigation payloads and full HTML do not collide in
+the cache. Cookies are forwarded to the origin but are not part of the cache
+key; no public page reads the session, so this is safe. Keep it that way: a
+public page that reads cookies or headers would be cached for one visitor
+and served to everyone.
+
+Every behaviour forwards the viewer `Host` header (managed AllViewer origin
+request policy). CloudFront checks the ALB's certificate against that
+header, so the ALB keeps its `www.ktmpost.com` certificate even though the
+origin is addressed by its `*.elb.amazonaws.com` name.
+
+### Setup
+
+1. Request an ACM certificate for `www.ktmpost.com` **in `us-east-1`**.
+   CloudFront only accepts certificates from that region; the ALB's
+   certificate in `ap-south-1` cannot be reused.
+2. Run:
+
+   ```bash
+   ALB_DNS=ktm-post-123456.ap-south-1.elb.amazonaws.com \
+   ACM_CERT_ARN=arn:aws:acm:us-east-1:<account>:certificate/... \
+   ./scripts/setup-cloudfront.sh
+   ```
+
+   It creates two cache policies and the distribution, prints the
+   distribution domain and a generated `X-Origin-Verify` value.
+3. Lock the ALB to CloudFront. On the HTTPS listener, change the default
+   action to a fixed 403 response and add a rule: if HTTP header
+   `X-Origin-Verify` equals the printed value, forward to the target group.
+   Requests that bypass CloudFront then get 403. The target group health
+   check goes straight to the task and is not affected.
+4. Change the `www.ktmpost.com` DNS record to the distribution domain.
+
+`SITE_URL`/`NEXT_PUBLIC_SITE_URL` stay `https://www.ktmpost.com`.
+
+### How fresh is a cached page
+
+After a content change the admin server actions call `revalidatePath`,
+which refreshes the origin's ISR cache. CloudFront picks the new version up
+when its own copy expires (60s for news, 1h for footer pages). Next also
+sends `stale-while-revalidate`, which CloudFront honours: the first request
+after expiry is answered from the old copy while a fresh one is fetched in
+the background. A page nobody has opened for a while can therefore show its
+previous version once. To force everything fresh, create an invalidation:
+
+```bash
+aws cloudfront create-invalidation --distribution-id <id> --paths "/*"
+```
+
+### Database region
+
+The Neon project is in `us-east-2` (Ohio) while the task runs in
+`ap-south-1`. Every query crosses roughly 200ms of round trip, and dynamic
+pages run several queries in sequence (an uncached article render takes
+several seconds). Create the Neon project in `ap-southeast-1` (Singapore)
+and keep the pooled connection string. This is the single biggest latency
+improvement available and needs no code change.
+
 ## Deploying
 
 After the one-time setup, every deploy is:
@@ -144,4 +218,6 @@ short git SHA, so rollback is redeploying an older tag.
   the deploy does not run one. Schema changes have to be applied to Neon
   separately.
 - **Cost**: 0.5 vCPU / 1GB on Fargate ARM64 runs a few dollars a month per
-  task; the ALB is the larger fixed cost at roughly $16-20/month.
+  task; the ALB is the larger fixed cost at roughly $16-20/month. CloudFront
+  is free for the first 1 TB/month out and then roughly $0.12/GB from Asian
+  edges.

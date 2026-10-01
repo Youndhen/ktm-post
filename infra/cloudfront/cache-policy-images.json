@@ -1,0 +1,19 @@
+{
+  "CachePolicyConfig": {
+    "Name": "ktm-post-images",
+    "Comment": "next/image output. Keyed on url/w/q query and Accept for webp/avif negotiation.",
+    "MinTTL": 60,
+    "DefaultTTL": 86400,
+    "MaxTTL": 31536000,
+    "ParametersInCacheKeyAndForwardedToOrigin": {
+      "EnableAcceptEncodingGzip": false,
+      "EnableAcceptEncodingBrotli": false,
+      "HeadersConfig": {
+        "HeaderBehavior": "whitelist",
+        "Headers": { "Quantity": 1, "Items": ["Accept"] }
+      },
+      "CookiesConfig": { "CookieBehavior": "none" },
+      "QueryStringsConfig": { "QueryStringBehavior": "all" }
+    }
+  }
+}
