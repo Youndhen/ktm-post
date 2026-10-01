@@ -1,7 +1,7 @@
 # AWS edge caching and hardening
 
 Date: 2026-10-01
-Status: approved in chat, spec pending review
+Status: approved
 
 ## Goal
 
@@ -49,7 +49,7 @@ Cache behaviours, most specific first:
 |---|---|---|
 | `/_next/static/*` | managed CachingOptimized | none |
 | `/_next/image*` | custom: key = query string, min 60s, default 1 day, max 1 year | none |
-| `/admin/*`, `/api/*`, `/login` | managed CachingDisabled | managed AllViewer |
+| `/admin/*`, `/api/*` | managed CachingDisabled | managed AllViewer |
 | `/*` default | custom: min 0, default 0, max 1 year, key = all query strings + headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`, `Next-Url`, `Accept`; no cookies | managed AllViewer |
 
 With min TTL 0 the default behaviour obeys the origin. Next sends
@@ -101,24 +101,36 @@ every new account `defaultRole: "editor"`, and the admin layout and server
 actions only check that a session exists. Anyone can register and edit the
 site.
 
-Fix:
-- `lib/auth.ts`: `defaultRole: "user"`. `trustedOrigins` becomes the site
-  URL and apex only; the localhost entries are added only when
-  `NODE_ENV !== "production"`.
-- `lib/get-session.ts`: add `requireStaffSession()` that throws unless
-  `session.user.role` is `admin` or `editor`. Add `isStaff(session)`.
-- `app/admin/(dashboard)/layout.tsx`: redirect to `/admin/login` when there
-  is no session, and to `/` when the session is not staff.
-- Every `app/admin/(dashboard)/*/action.ts`: replace the bare session check
-  with `requireStaffSession()`. `users/action.ts` keeps its admin-only check.
-- `app/api/upload/route.ts` and `app/api/import/route.ts`: use
-  `requireStaffSession()`; return 403 for non-staff.
-- The users page continues to create accounts with role `editor` or `admin`.
+Decision: reader accounts are not needed for now. Public login and sign-up
+are removed, not hardened.
+
+- Delete `app/login/page.tsx`. Remove the `/login` links in
+  `app/components/SearchDropdown.tsx` and `app/admin/login/page.tsx`.
+- `lib/auth.ts`: `emailAndPassword.disableSignUp: true`, so the
+  `/api/auth/sign-up/email` endpoint is closed regardless of UI.
+  `trustedOrigins` becomes the site URL and apex only; the localhost entries
+  are added only when `NODE_ENV !== "production"`.
+- Staff accounts are created only from the admin users page, which already
+  sets role `editor` or `admin`.
+- Defence in depth, because a session alone must never grant write access:
+  - `lib/get-session.ts`: add `requireStaffSession()` that throws unless
+    `session.user.role` is `admin` or `editor`, and `isStaff(session)`.
+  - `app/admin/(dashboard)/layout.tsx`: redirect to `/admin/login` when
+    there is no session, and to `/` when the session is not staff.
+  - Every `app/admin/(dashboard)/*/action.ts`: replace the bare session
+    check with `requireStaffSession()`. `users/action.ts` keeps its
+    admin-only check.
+  - `app/api/upload/route.ts` and `app/api/import/route.ts`: use
+    `requireStaffSession()`; return 403 for non-staff.
 
 First-admin setup (`app/api/auth/setup-admin/route.ts`):
+- Because sign-up is disabled, the route can no longer call
+  `auth.api.signUpEmail`. It creates the user and credential account
+  directly with Prisma and better-auth's `hashPassword`, the same way
+  `users/action.ts` already does, with role `admin`.
 - Read `ADMIN_SETUP_TOKEN` from the environment. If unset, respond 404.
-- Require header `x-setup-token` equal to it (401 otherwise), in addition to the existing
-  zero-users check.
+- Require header `x-setup-token` equal to it (401 otherwise), in addition to
+  the existing zero-users check.
 - `app/admin/login/page.tsx` shows a "setup token" field on the first-time
   tab and sends it.
 - Add the token to the task definition `secrets`, `docker-compose.yml`,
@@ -167,8 +179,10 @@ the working branch.
   - `/admin/login` and `/search?q=x` return `no-store` or `private`.
   - `/_next/static/...` returns `immutable`.
   - every response carries the five security headers.
-- Role test against the local container: register via `/login`, confirm
-  `/admin` redirects to `/`, confirm `POST /api/upload` returns 403.
+- `GET /login` returns 404 and `POST /api/auth/sign-up/email` is rejected.
+- Role test against the local container: a session whose role is neither
+  admin nor editor gets redirected from `/admin` to `/` and 403 from
+  `POST /api/upload`.
 - `POST /api/auth/setup-admin` without the header returns 401 when the
   token is set and 404 when it is not.
 - Upload test: a 11 MB file returns 413, a `.pdf` returns 415.
