@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/get-session";
 import { isStaff } from "@/lib/staff";
-import { validateUpload } from "@/lib/upload-validation";
+import { MAX_UPLOAD_BYTES, exceedsUploadLimit, validateUpload } from "@/lib/upload-validation";
 import { prisma } from "@/lib/prisma";
 
 import { v2 as cloudinary } from "cloudinary";
@@ -21,6 +21,13 @@ export async function POST(req: Request) {
   }
   if (!isStaff(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (exceedsUploadLimit(req.headers.get("content-length"))) {
+    return NextResponse.json(
+      { error: `File is too large. Maximum size is ${MAX_UPLOAD_BYTES / (1024 * 1024)} MB.` },
+      { status: 413 },
+    );
   }
 
   try {

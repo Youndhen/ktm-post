@@ -29,3 +29,16 @@ export function validateUpload(file: { size: number; type: string }): UploadVali
   }
   return { ok: true };
 }
+
+// Room for the multipart boundary, part headers and the "alt" field.
+const MULTIPART_OVERHEAD_BYTES = 64 * 1024;
+
+/**
+ * Cheap check on the declared request size, so an oversized upload is refused
+ * with 413 before the body is read. validateUpload still checks the file.
+ */
+export function exceedsUploadLimit(contentLength: string | null): boolean {
+  const declared = Number(contentLength);
+  if (!contentLength || !Number.isFinite(declared)) return false;
+  return declared > MAX_UPLOAD_BYTES + MULTIPART_OVERHEAD_BYTES;
+}
