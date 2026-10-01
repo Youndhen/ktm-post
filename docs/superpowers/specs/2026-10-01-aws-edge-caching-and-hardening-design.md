@@ -117,7 +117,7 @@ Fix:
 
 First-admin setup (`app/api/auth/setup-admin/route.ts`):
 - Read `ADMIN_SETUP_TOKEN` from the environment. If unset, respond 404.
-- Require header `x-setup-token` equal to it, in addition to the existing
+- Require header `x-setup-token` equal to it (401 otherwise), in addition to the existing
   zero-users check.
 - `app/admin/login/page.tsx` shows a "setup token" field on the first-time
   tab and sends it.
