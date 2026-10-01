@@ -1,0 +1,55 @@
+{
+  "family": "ktm-post",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "${CPU_ARCHITECTURE}",
+    "operatingSystemFamily": "LINUX"
+  },
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ktmPostEcsExecutionRole",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ktmPostEcsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "web",
+      "image": "${IMAGE_URI}",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3000, "protocol": "tcp", "name": "http" }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "HOSTNAME", "value": "0.0.0.0" },
+        { "name": "NEXT_TELEMETRY_DISABLED", "value": "1" },
+        { "name": "NEXT_PUBLIC_SITE_URL", "value": "${SITE_URL}" },
+        { "name": "BETTER_AUTH_URL", "value": "${SITE_URL}" }
+      ],
+      "secrets": [
+        { "name": "DATABASE_URL",          "valueFrom": "${SECRET_ARN}:DATABASE_URL::" },
+        { "name": "BETTER_AUTH_SECRET",    "valueFrom": "${SECRET_ARN}:BETTER_AUTH_SECRET::" },
+        { "name": "CLOUDINARY_CLOUD_NAME", "valueFrom": "${SECRET_ARN}:CLOUDINARY_CLOUD_NAME::" },
+        { "name": "CLOUDINARY_API_KEY",    "valueFrom": "${SECRET_ARN}:CLOUDINARY_API_KEY::" },
+        { "name": "CLOUDINARY_API_SECRET", "valueFrom": "${SECRET_ARN}:CLOUDINARY_API_SECRET::" },
+        { "name": "CLOUDINARY_URL",        "valueFrom": "${SECRET_ARN}:CLOUDINARY_URL::" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health >/dev/null 2>&1 || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ktm-post",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "web",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}

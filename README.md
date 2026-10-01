@@ -32,6 +32,12 @@ cp .env.example .env   # then fill in real values
 Do not wrap values in quotes. `docker run --env-file` does not strip them,
 which makes Prisma reject `DATABASE_URL`.
 
+The flip side: unquoted values mean `.env` is no longer safe to `source` in
+a shell, because `DATABASE_URL` contains `&`. Nothing in this repo does that
+(`scripts/deploy-ecs.sh` parses the file with `grep`/`cut`), but use
+`docker run --env-file .env` rather than `set -a; . ./.env` in ad-hoc
+commands.
+
 The database stays on hosted Neon; the container runs the app only.
 
 ### Build and run
@@ -50,6 +56,8 @@ another host port:
 ```bash
 APP_PORT=3001 docker compose up -d
 ```
+
+Deploying to AWS ECS Fargate is documented in [DEPLOY.md](DEPLOY.md).
 
 ### Notes
 
