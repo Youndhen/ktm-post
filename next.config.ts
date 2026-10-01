@@ -9,7 +9,29 @@ const nextConfig: NextConfig = {
   // so that server.js is not where the Docker CMD expects it.
   outputFileTracingRoot: path.join(process.cwd()),
   staticPageGenerationTimeout: 120,
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
+  },
   images: {
+    // One day. CloudFront's image cache policy uses the same default.
+    minimumCacheTTL: 86400,
     remotePatterns: [
       {
         protocol: "https",
