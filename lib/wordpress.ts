@@ -160,6 +160,11 @@ const categoryAliases: Record<string, string[]> = {
   "podcast": ["podcast", "पोडकास्ट"],
 };
 
+/** True when the slug is one of the built-in category aliases above. */
+export function isCategoryAlias(slug: string): boolean {
+  return Object.prototype.hasOwnProperty.call(categoryAliases, slug.toLowerCase().trim());
+}
+
 /** Fetch recent published posts from DB */
 export async function fetchPosts(first: number = 10): Promise<Post[]> {
   try {

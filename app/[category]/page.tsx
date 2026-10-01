@@ -7,7 +7,8 @@ export async function generateStaticParams() {
   return [];
 }
 
-import { fetchPostsByCategory, fetchWPCategories } from "@/lib/wordpress";
+import { notFound } from "next/navigation";
+import { fetchPostsByCategory, fetchWPCategories, isCategoryAlias } from "@/lib/wordpress";
 import { transliterateSlug } from "@/lib/transliterate";
 import { extractImagesFromContent, getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "@/lib/post-format";
 import Card from "../components/Card";
@@ -59,6 +60,12 @@ export default async function CategoryPage({
   const fetchLimit = wpCategorySlug === "exclusive" ? 100 : 50;
   const rawPosts = await fetchPostsByCategory(wpCategorySlug, fetchLimit);
   const posts = rawPosts.map(mapWpPost);
+
+  // This route catches every single-segment path. Anything that is not a
+  // category, a static page or a built-in alias is a 404, not an empty list.
+  if (!matchedCategory && !isCategoryAlias(decodedCategory) && posts.length === 0) {
+    notFound();
+  }
 
   return (
     <div className="w-full min-h-screen bg-white">
