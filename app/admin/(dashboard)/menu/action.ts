@@ -48,7 +48,7 @@ export async function createMenuItem(
   }
 
   revalidatePath("/admin/menu");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -92,7 +92,7 @@ export async function updateMenuItem(
   }
 
   revalidatePath("/admin/menu");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -107,6 +107,6 @@ export async function deleteMenuItem(id: string): Promise<MenuActionState> {
   }
 
   revalidatePath("/admin/menu");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { success: true };
 }

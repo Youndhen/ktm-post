@@ -127,15 +127,17 @@ export function extractImagesFromContent(content: string | null): string[] {
   return [...new Set(images)];
 }
 
+/** Some categories are shown under a different slug than the one stored. */
+function publicCategorySlug(slug: string): string {
+  if (slug === "business") return "economy";
+  if (slug === "science-technology") return "technology";
+  return slug;
+}
+
 export function mapWpPost(post: WordPressPost): FormattedPost {
   const primaryCat = post.categories?.nodes?.[0];
   const catSlug = primaryCat?.slug;
-  const categorySlug =
-    catSlug === "business"
-      ? "economy"
-      : catSlug === "science-technology"
-        ? "technology"
-        : catSlug;
+  const categorySlug = catSlug ? publicCategorySlug(catSlug) : catSlug;
 
   return {
     id: post.id,
@@ -173,4 +175,20 @@ export function getPostUrl(post: {
     return `/${post.categorySlug}/${idPrefix}${cleanSlug}`;
   }
   return `/news/${idPrefix}${cleanSlug}`;
+}
+
+/**
+ * Every public path an article is served at, plus the category lists that
+ * show it. Used to revalidate the ISR cache when a post changes.
+ */
+export function postPublicPaths(slug: string, categorySlugs: string[]): string[] {
+  const cleanSlug = transliterateSlug(slug);
+  const paths = new Set<string>([`/news/${cleanSlug}`]);
+  for (const stored of categorySlugs) {
+    for (const cat of new Set([stored, publicCategorySlug(stored)])) {
+      paths.add(`/${cat}`);
+      paths.add(`/${cat}/${cleanSlug}`);
+    }
+  }
+  return [...paths];
 }

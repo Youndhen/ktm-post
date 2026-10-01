@@ -4,6 +4,7 @@ import {
   extractImagesFromContent,
   getCleanTitle,
   getPostUrl,
+  postPublicPaths,
 } from "@/lib/post-format";
 
 describe("decodeHtmlEntities", () => {
@@ -47,5 +48,25 @@ describe("extractImagesFromContent", () => {
   it("prefers data-src over a base64 placeholder", () => {
     const html = '<img src="data:image/gif;base64,AAA" data-src="https://b.com/z.png">';
     expect(extractImagesFromContent(html)).toEqual(["https://b.com/z.png"]);
+  });
+});
+
+describe("postPublicPaths", () => {
+  it("lists the article under /news and under each of its categories", () => {
+    expect(postPublicPaths("budget-speech", ["politics"])).toEqual([
+      "/news/budget-speech",
+      "/politics",
+      "/politics/budget-speech",
+    ]);
+  });
+  it("uses the public name for categories that are shown under another slug", () => {
+    const paths = postPublicPaths("x", ["business", "science-technology"]);
+    expect(paths).toEqual(
+      expect.arrayContaining(["/economy", "/economy/x", "/technology", "/technology/x"]),
+    );
+  });
+  it("does not repeat a path", () => {
+    const paths = postPublicPaths("x", ["economy", "business"]);
+    expect(new Set(paths).size).toBe(paths.length);
   });
 });

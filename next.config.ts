@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   // so that server.js is not where the Docker CMD expects it.
   outputFileTracingRoot: path.join(process.cwd()),
   staticPageGenerationTimeout: 120,
+  // ISR pages send "s-maxage=<revalidate>, stale-while-revalidate=<expireTime -
+  // revalidate>". The default is a year, which lets a CDN hand out a long-dead
+  // copy of an edited or deleted article to the first visitor. One hour.
+  expireTime: 3600,
   async headers() {
     return [
       {

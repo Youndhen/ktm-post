@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { requireStaffSession } from "@/lib/get-session";
+import { postPublicPaths } from "@/lib/post-format";
 import { redirect } from "next/navigation";
 
 import { transliterateSlug } from "@/lib/transliterate";
@@ -119,8 +120,8 @@ export async function createPost(
   revalidatePath("/news");
   revalidatePath("/search");
   revalidatePath("/exclusive");
-  for (const cat of selectedCategories) {
-    revalidatePath(`/${cat.slug}`);
+  for (const path of postPublicPaths(slug, selectedCategories.map((c) => c.slug))) {
+    revalidatePath(path);
   }
   redirect(`/admin/posts/${postId}`);
 }
@@ -240,21 +241,18 @@ export async function updatePost(
   revalidatePath("/news");
   revalidatePath("/search");
   revalidatePath("/exclusive");
-  revalidatePath(`/news/${current.slug}`);
-  revalidatePath(`/news/${slug}`);
-  if (current.slug) revalidatePath(`/${current.slug}`);
-  if (slug) revalidatePath(`/${slug}`);
 
-  const allRelevantCategories = [
+  const allRelevantCategorySlugs = [
     ...selectedCategories,
     ...current.categories.map((c) => c.category),
-  ];
-  for (const cat of allRelevantCategories) {
-    if (cat?.slug) {
-      revalidatePath(`/${cat.slug}`);
-      revalidatePath(`/${cat.slug}/${slug}`);
-      revalidatePath(`/${cat.slug}/${current.slug}`);
-    }
+  ]
+    .map((cat) => cat?.slug)
+    .filter((s): s is string => Boolean(s));
+  for (const path of [
+    ...postPublicPaths(current.slug, allRelevantCategorySlugs),
+    ...postPublicPaths(slug, allRelevantCategorySlugs),
+  ]) {
+    revalidatePath(path);
   }
 
   redirect(`/admin/posts/${postId}`);
@@ -263,7 +261,10 @@ export async function updatePost(
 export async function deletePost(postId: string): Promise<ActionState> {
   const session = await requireStaffSession();
 
-  const post = await prisma.post.findUnique({ where: { id: postId } });
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    include: { categories: { include: { category: true } } },
+  });
   if (!post) return { error: "Post not found" };
 
   try {
@@ -273,8 +274,18 @@ export async function deletePost(postId: string): Promise<ActionState> {
     return { error: err.message || "Failed to delete post" };
   }
 
+  // The article and the lists it appeared in are ISR-cached; without this a
+  // deleted post would keep being served until the cache expires.
+  revalidatePath("/admin");
   revalidatePath("/admin/posts");
   revalidatePath("/");
-  revalidatePath(`/${post.slug}`);
+  revalidatePath("/news");
+  revalidatePath("/exclusive");
+  for (const path of postPublicPaths(
+    post.slug,
+    post.categories.map((pc) => pc.category.slug),
+  )) {
+    revalidatePath(path);
+  }
   redirect("/admin/posts");
 }
