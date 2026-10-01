@@ -73,12 +73,21 @@ aws secretsmanager create-secret \
     "CLOUDINARY_CLOUD_NAME":"...",
     "CLOUDINARY_API_KEY":"...",
     "CLOUDINARY_API_SECRET":"...",
-    "CLOUDINARY_URL":"..."
+    "CLOUDINARY_URL":"...",
+    "ADMIN_SETUP_TOKEN":"..."
   }'
 ```
 
 Note the returned ARN. ECS injects these as environment variables at start,
 so they never enter the image.
+
+`ADMIN_SETUP_TOKEN` enables the one-time first-admin form at `/admin/login`.
+Use a long random value (`openssl rand -hex 32`). After the first admin
+exists, set the key to an empty string and redeploy; the endpoint then
+answers 404. Do not delete the key from the secret: the task definition
+references it, and ECS refuses to start a task whose secret key is missing.
+For the same reason, a secret created before this key existed needs it added
+(an empty string is fine) before the next deploy.
 
 `NEXT_PUBLIC_SITE_URL` and `BETTER_AUTH_URL` are *not* secrets and are set
 as plain env vars in the task definition.

@@ -11,6 +11,7 @@ export default function AdminLoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [setupToken, setSetupToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,7 @@ export default function AdminLoginPage() {
         // Safe one-time initial admin setup
         const res = await fetch("/api/auth/setup-admin", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-setup-token": setupToken },
           body: JSON.stringify({ name, email, password }),
         });
 
@@ -104,19 +105,34 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
           {isSignUp && (
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Chief Editor / Admin"
-                className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-nepal-red focus:bg-white text-gray-900 font-poppins transition-all placeholder-gray-400"
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="Chief Editor / Admin"
+                  className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-nepal-red focus:bg-white text-gray-900 font-poppins transition-all placeholder-gray-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                  Setup Token
+                </label>
+                <input
+                  type="password"
+                  value={setupToken}
+                  onChange={(e) => setSetupToken(e.target.value)}
+                  required
+                  placeholder="ADMIN_SETUP_TOKEN from the server environment"
+                  className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-nepal-red focus:bg-white text-gray-900 font-poppins transition-all placeholder-gray-400"
+                />
+              </div>
+            </>
           )}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
