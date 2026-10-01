@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/get-session";
 import { isStaff } from "@/lib/staff";
+import { validateUpload } from "@/lib/upload-validation";
 import { prisma } from "@/lib/prisma";
 
 import { v2 as cloudinary } from "cloudinary";
@@ -31,6 +32,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    const check = validateUpload(file);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: check.status });
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -39,7 +45,7 @@ export async function POST(req: Request) {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: "ktmpost",
-          resource_type: "auto",
+          resource_type: "image",
         },
         (error, result) => {
           if (error) reject(error);
