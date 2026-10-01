@@ -7,7 +7,7 @@ import {
   getCleanTitle,
   getPostUrl,
   mapWpPost,
-} from "../page"
+} from "@/lib/post-format";
 import { fetchPosts } from "@/lib/wordpress";
 import Card from "../components/Card";
 

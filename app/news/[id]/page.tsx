@@ -10,7 +10,7 @@ import { Suspense } from "react";
 
 import { Inter } from "next/font/google";
 import { prisma } from "@/lib/prisma";
-import { getCleanContent, getPostUrl } from "@/app/page";
+import { getCleanContent, getPostUrl } from "@/lib/post-format";
 import ImageSlider from "@/app/components/ImageSlider";
 import NewsImage from "@/app/components/NewsImage";
 import YouTubeEmbed from "@/app/components/YouTubeEmbed";

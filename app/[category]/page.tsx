@@ -3,7 +3,7 @@ export const revalidate = 60;
 
 import { fetchPostsByCategory, fetchWPCategories } from "@/lib/wordpress";
 import { transliterateSlug } from "@/lib/transliterate";
-import { extractImagesFromContent, getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "../page";
+import { extractImagesFromContent, getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "@/lib/post-format";
 import Card from "../components/Card";
 
 export default async function CategoryPage({

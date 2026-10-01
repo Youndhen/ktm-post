@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { searchPosts, fetchPosts } from "@/lib/wordpress";
-import { extractImagesFromContent, getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "../page";
+import { extractImagesFromContent, getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "@/lib/post-format";
 import Card from "../components/Card";
 
 export default async function SearchPage({

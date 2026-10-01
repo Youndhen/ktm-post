@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchPosts } from "@/lib/wordpress";
-import { getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "@/app/page";
+import { getCleanContent, getCleanTitle, getPostUrl, mapWpPost } from "@/lib/post-format";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
