@@ -11,6 +11,7 @@ import ArticleShareBar from "@/app/components/ArticleShareBar";
 import NepaliCalendarWidget from "@/app/components/NepaliCalendarWidget";
 import UpcomingHolidays from "@/app/components/UpcomingHolidays";
 import { sanitizeContent } from "@/lib/sanitize-content";
+import { publishedOnly } from "@/lib/post-visibility";
 import ForexRatesWidget from "@/app/components/ForexRatesWidget";
 import SidebarAds from "@/app/components/SidebarAds";
 import { Suspense } from "react";
@@ -246,7 +247,8 @@ async function fetchPostFromDB(idParam: string, categorySlug?: string) {
     }
   }
 
-  return post;
+  // Drafts resolve by the same keys but must look like a 404 to the public.
+  return publishedOnly(post);
 }
 
 async function fetchRelatedFromDB(postId: string, categoryIds: string[], limit: number = 4) {

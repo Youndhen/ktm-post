@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { BannerAd, HomePagePosts } from "./type";
 import { transliterateSlug } from "./transliterate";
+import { publishedOnly } from "./post-visibility";
 import { getYouTubeThumbnailUrl } from "./youtube";
 
 export interface FeaturedImage {
@@ -322,7 +323,8 @@ export async function fetchPostBySlug(slug: string): Promise<Post | null> {
       }
     }
 
-    return post ? mapPrismaPostToPost(post) : null;
+    const visible = publishedOnly(post);
+    return visible ? mapPrismaPostToPost(visible) : null;
   } catch (error) {
     console.error(`fetchPostBySlug [${slug}] error:`, error);
     return null;
