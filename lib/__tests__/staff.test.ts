@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStaff } from "@/lib/staff";
+import { isActiveStaff, isStaff } from "@/lib/staff";
 
 describe("isStaff", () => {
   it("accepts admin and editor", () => {
@@ -14,5 +14,19 @@ describe("isStaff", () => {
   });
   it("is case sensitive, matching how roles are stored", () => {
     expect(isStaff("Admin")).toBe(false);
+  });
+});
+
+describe("isActiveStaff", () => {
+  it("accepts an unbanned admin or editor", () => {
+    expect(isActiveStaff({ role: "admin", banned: false })).toBe(true);
+    expect(isActiveStaff({ role: "editor", banned: null })).toBe(true);
+    expect(isActiveStaff({ role: "editor" })).toBe(true);
+  });
+  it("rejects a banned staff member", () => {
+    expect(isActiveStaff({ role: "admin", banned: true })).toBe(false);
+  });
+  it("rejects a non-staff role even when not banned", () => {
+    expect(isActiveStaff({ role: "user", banned: false })).toBe(false);
   });
 });

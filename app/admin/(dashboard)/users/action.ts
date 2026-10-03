@@ -175,6 +175,12 @@ export async function toggleUserBan(
       },
     });
 
+    // better-auth only checks the ban at sign-in. End the user's existing
+    // sessions so a suspension takes effect now, not when they next log in.
+    if (!currentBanned) {
+      await prisma.session.deleteMany({ where: { userId } });
+    }
+
     revalidatePath("/admin/users");
     return { success: true };
   } catch (err: any) {

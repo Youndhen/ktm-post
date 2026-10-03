@@ -31,6 +31,11 @@ describe("requireStaffPage", () => {
     await expect(requireStaffPage()).rejects.toThrow("REDIRECT:/");
   });
 
+  it("sends a suspended editor to the home page even with a live session", async () => {
+    mocks.getSession.mockResolvedValue({ user: { id: "u", role: "editor", banned: true } });
+    await expect(requireStaffPage()).rejects.toThrow("REDIRECT:/");
+  });
+
   it("returns the session for an editor", async () => {
     const session = { user: { id: "u", role: "editor" } };
     mocks.getSession.mockResolvedValue(session);
