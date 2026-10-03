@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft, Mail, Phone, MapPin, Building2, Globe } from "lucide-react";
+import { sanitizeContent } from "@/lib/sanitize-content";
 
 export const revalidate = 3600;
 
@@ -99,7 +100,7 @@ export default async function ContactPage() {
           {page?.content && (
             <article
               className="prose max-w-none text-gray-800 leading-relaxed font-mukta text-lg [&>p]:mb-4 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4"
-              dangerouslySetInnerHTML={{ __html: page.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeContent(page.content) }}
             />
           )}
         </div>

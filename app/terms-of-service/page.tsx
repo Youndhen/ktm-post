@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { sanitizeContent } from "@/lib/sanitize-content";
 
 export const revalidate = 3600;
 
@@ -32,7 +33,7 @@ export default async function TermsOfServicePage() {
           {page?.content ? (
             <article
               className="prose max-w-none text-gray-800 leading-relaxed font-mukta text-lg [&>p]:mb-4 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-semibold [&>h3]:mt-6 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-4"
-              dangerouslySetInnerHTML={{ __html: page.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeContent(page.content) }}
             />
           ) : (
             <div className="text-gray-700 leading-relaxed font-mukta text-lg space-y-4">

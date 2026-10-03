@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireStaffSession } from "@/lib/get-session";
+import { sanitizeContent } from "@/lib/sanitize-content";
 import { redirect } from "next/navigation";
 import { transliterateSlug } from "@/lib/transliterate";
 
@@ -24,7 +25,7 @@ export async function createStaticPage(
   await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
-  const content = (formData.get("content") as string)?.trim() || "";
+  const content = sanitizeContent((formData.get("content") as string)?.trim());
   const rawSlug = (formData.get("slug") as string)?.trim();
   const menuOrder = parseInt((formData.get("menuOrder") as string) || "0", 10);
   const isFooter = formData.get("isFooter") === "true" || formData.get("isFooter") === "on";
@@ -68,7 +69,7 @@ export async function updateStaticPage(
   await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
-  const content = (formData.get("content") as string)?.trim() || "";
+  const content = sanitizeContent((formData.get("content") as string)?.trim());
   const rawSlug = (formData.get("slug") as string)?.trim();
   const menuOrder = parseInt((formData.get("menuOrder") as string) || "0", 10);
   const isFooter = formData.get("isFooter") === "true" || formData.get("isFooter") === "on";

@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "lib/__tests__/sanitize-content.test.ts"
+        ],
+        "createdAt": "2026-10-03T09:16:46.518Z",
+        "reason": "test fixture: asserts the sanitiser strips unsafe img attributes, not UI"
+      }
+    ]
+  }
+}

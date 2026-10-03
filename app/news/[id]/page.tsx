@@ -10,6 +10,7 @@ export async function generateStaticParams() {
 import ArticleShareBar from "@/app/components/ArticleShareBar";
 import NepaliCalendarWidget from "@/app/components/NepaliCalendarWidget";
 import UpcomingHolidays from "@/app/components/UpcomingHolidays";
+import { sanitizeContent } from "@/lib/sanitize-content";
 import ForexRatesWidget from "@/app/components/ForexRatesWidget";
 import SidebarAds from "@/app/components/SidebarAds";
 import { Suspense } from "react";
@@ -365,9 +366,11 @@ export default async function NewsSlugPage({
 
   // Clean content (remove hero image and youtube iframe from body text if embedded)
   const contentWithoutThumb = removeThumbnailFromContent(post.content, heroImage);
-  const cleanedContent = videoUrl
-    ? removeYouTubeFromContent(contentWithoutThumb)
-    : contentWithoutThumb;
+  // Sanitised at render as well as at save, so articles stored before the
+  // sanitiser existed (and imported ones) cannot carry script either.
+  const cleanedContent = sanitizeContent(
+    videoUrl ? removeYouTubeFromContent(contentWithoutThumb) : contentWithoutThumb,
+  );
 
   const dateStr = (post.publishedAt || post.createdAt).toISOString();
   const formattedDate = getFormattedNepaliDate(dateStr);

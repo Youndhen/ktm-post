@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { requireStaffSession } from "@/lib/get-session";
+import { sanitizeContent } from "@/lib/sanitize-content";
 import { postPublicPaths } from "@/lib/post-format";
 import { redirect } from "next/navigation";
 
@@ -32,7 +33,7 @@ export async function createPost(
   const session = await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
-  const content = (formData.get("content") as string)?.trim();
+  const content = sanitizeContent((formData.get("content") as string)?.trim());
   const excerpt = (formData.get("excerpt") as string) || null;
   const videoUrl = (formData.get("videoUrl") as string)?.trim() || null;
   const featuredImageId = (formData.get("featuredImageId") as string) || null;
@@ -134,7 +135,7 @@ export async function updatePost(
   await requireStaffSession();
 
   const title = (formData.get("title") as string)?.trim();
-  const content = (formData.get("content") as string)?.trim();
+  const content = sanitizeContent((formData.get("content") as string)?.trim());
   const excerpt = (formData.get("excerpt") as string) || null;
   const videoUrl = (formData.get("videoUrl") as string)?.trim() || null;
   const featuredImageId = (formData.get("featuredImageId") as string) || null;
