@@ -21,6 +21,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
+    // Hotfix: public sign-up granted every new account the editor role.
+    // Staff accounts are created from the admin users page only.
+    disableSignUp: true,
   },
   plugins: [
     admin({
